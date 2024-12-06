@@ -15,8 +15,7 @@ const app = express();
 app.use(
     cors({
         credentials: true,
-        origin: "https://a5--genuine-kulfi-77fcd8.netlify.app" || "http://localhost:3000",
-        //origin: "http://localhost:3000",
+        origin: true,
     })
 );
 
