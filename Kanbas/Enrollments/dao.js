@@ -1,45 +1,28 @@
-import db from "../Database/index.js";
+import Database from "../Database/index.js";
 
-export const findAllEnrollments = () => {
-  return db.enrollments;
-};
+export async function enrollUserInCourse(userId, courseId) {
+    const { enrollments } = Database;
+    const exists = enrollments.some(enrollment => enrollment.user === userId && enrollment.course === courseId);
+    if (!exists) {
+        enrollments.push({ _id: Date.now().toString(), user: userId, course: courseId });
+    }
+}
 
-export const createEnrollment = (enrollment) => {
-  const newEnrollment = { ...enrollment, _id: new Date().getTime().toString() };
-  db.enrollments.push(newEnrollment);
-  return newEnrollment;
-};
+export async function unEnrollUserInCourse(userId, courseId) {
+    const { enrollments } = Database;
+    const index = enrollments.findIndex(
+        (enrollment) => enrollment.user === userId && enrollment.course === courseId
+    );
+    if (index !== -1) {
+        enrollments.splice(index, 1);
+    }
+}
 
-export const deleteEnrollment = (userId, courseId) => {
-  const index = db.enrollments.findIndex(
-    (enrollment) => enrollment.user === userId && enrollment.course === courseId
-  );
-  if (index !== -1) {
-    const enrollment = db.enrollments[index];
-    db.enrollments.splice(index, 1);
-    return enrollment;
-  }
-  return null;
-};
+export async function findEnrollmentsForUser(userId) {
+    const { enrollments } = Database;
+    return enrollments.filter((enrollment) => enrollment.user === userId);
+}
 
-export const enrollInCourse = (userId, courseId) => {
-  // Check if enrollment already exists
-  const exists = db.enrollments.some(
-    (enrollment) => enrollment.user === userId && enrollment.course === courseId
-  );
-  if (exists) {
-    return { error: "Already enrolled" };
-  }
-  const newEnrollment = {
-    _id: new Date().getTime().toString(),
-    user: userId,
-    course: courseId,
-    role: "STUDENT"
-  };
-  db.enrollments.push(newEnrollment);
-  return newEnrollment;
-};
-
-export const unenrollFromCourse = (userId, courseId) => {
-  return deleteEnrollment(userId, courseId);
-};
+export async function findAllCourses() {
+    return Database.courses;
+}
