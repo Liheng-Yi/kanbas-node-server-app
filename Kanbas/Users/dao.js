@@ -1,4 +1,4 @@
-import db from "../Database/index.js";
+import db from "../../oldDB/Database/index.js";
 import model from "./model.js";
 
 export const createUser = (user) => {
@@ -8,17 +8,14 @@ export const createUser = (user) => {
 
 
 
-export const findAllUsers = async () => {
-  const users = await model.find();
-  console.log('Users from database:', users);
-  return users;
-};
+export const findAllUsers = () => model.find();
 
 export const findUserById = (userId) => model.findById(userId);
 
 
 export const findUserByUsername = (username) =>  model.findOne({ username: username });
 export const findUserByCredentials = (username, password) =>  model.findOne({ username, password });
+
 export const updateUser = (userId, user) =>  model.updateOne({ _id: userId }, { $set: user });
 export const deleteUser = (userId) => model.deleteOne({ _id: userId });
 
@@ -26,6 +23,7 @@ export const findUsersByRole = (role) => model.find({ role: role }); // or just 
 
 export const findUsersByPartialName = (partialName) => {
   const regex = new RegExp(partialName, "i"); // 'i' makes it case-insensitive
+  console.log("[dao] findUsersByPartialName", regex);
   return model.find({
     $or: [{ firstName: { $regex: regex } }, { lastName: { $regex: regex } }],
   });

@@ -1,4 +1,4 @@
-import db from "../Database/index.js";
+import db from "../../oldDB/Database/index.js";
 
 export const findAllEnrollments = () => {
   return db.enrollments;
