@@ -16,27 +16,20 @@ app.use(cors({
   credentials: true
 }));
 
+app.use(express.json());
+
 const sessionOptions = {
   secret: process.env.SESSION_SECRET || "kanbas",
   resave: false,
   saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV !== "development",
+    sameSite: process.env.NODE_ENV === "development" ? "lax" : "none"
+  }
 };
 
-if (process.env.NODE_ENV !== "development") {
-  sessionOptions.proxy = true;
-  sessionOptions.cookie = {
-    sameSite: "none",
-    secure: true,
-    domain: process.env.NODE_SERVER_DOMAIN,
-  };
-}
+app.use(session(sessionOptions));
 
-app.use(
-  session(sessionOptions)
-);
-
-
-app.use(express.json())
 Lab5(app)
 Hello(app)
 UserRoutes(app)
