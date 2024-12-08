@@ -1,43 +1,53 @@
-import db from "../../oldDB/Database/index.js";
+import model from "./model.js";
+import courseModel from "../Courses/model.js";
 
-export const findAllAssignments = () => {
-  return db.assignments;
-};
-
-export const findAssignmentById = (aid) => {
-  return db.assignments.find((assignment) => assignment._id === aid);
-};
-
-export const findAssignmentsForCourse = (courseId) => {
-  console.log("findAssignmentsForCourse from server");
-  // console.log("assignments after deletion:", db.assignments);
-  return db.assignments.filter((assignment) => assignment.course === courseId);
-
-};
-
-export const createAssignment = (assignment) => {
-  const newAssignment = { ...assignment, _id: new Date().getTime().toString() };
-  db.assignments.push(newAssignment);
-  console.log("createAssignment from server");
-  return newAssignment;
-};
-
-export const updateAssignment = (aid, assignment) => {
-  const index = db.assignments.findIndex((a) => a._id === aid);
-  if (index !== -1) {
-    db.assignments[index] = { ...db.assignments[index], ...assignment };
-    console.log("updateAssignment from server");
-    return db.assignments[index];
+export async function createAssignments(assignment) {
+  try {
+    // First find the course to get its number
+    const course = await courseModel.findById(assignment.course);
+    if (!course) {
+      throw new Error("Course not found");
+    }
+    
+    // Create new assignment object with course number
+    const newAssignment = {
+      ...assignment,
+      course: course.number, // Use course number instead of ID
+      availableFromDate: assignment.startDate || "",
+      dueDate: assignment.endDate || "",
+      points: parseInt(assignment.points) || 0
+    };
+    
+    delete newAssignment._id;
+    return model.create(newAssignment);
+  } catch (error) {
+    console.error("Error creating assignment:", error);
+    throw error;
   }
-  return null;
-};
+}
+  
+export async function findAssignmentsForCourse(courseId) {
+  try {
+    // First find the course to get its number
+    const course = await courseModel.findById(courseId);
+    if (!course) {
+      console.log("Course not found");
+      return [];
+    }
+    
+    // Use the course number to find assignments
+    const assignments = await model.find({ course: course.number });
+    return assignments;
+  } catch (error) {
+    console.error("Error finding assignments:", error);
+    throw error;
+  }
+}
 
+export function deleteAssignment(assignmentId) {
+  return model.deleteOne({ _id: assignmentId });
+}
 
-export function deleteAssignment(aid) {
- const { assignments } = db;
- db.assignments = assignments.filter((assignment) => assignment._id !== aid);
-console.log("deleting assignment with id:", aid);
-console.log("assignments after deletion:", db.assignments);
- console.log("deleteAssignment from server");
-
+export function updateAssignment(assignmentId, assignmentUpdates) {
+  return model.updateOne({ _id: assignmentId }, { $set: assignmentUpdates });
 }
